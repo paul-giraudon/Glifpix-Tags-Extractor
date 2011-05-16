@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--	This file is part of GlifPix Tags Extractor.
+
+	 GlifPix Tags Extractor is free software: you can redistribute it and/or modify
+	 it under the terms of the GNU General Public License as published by
+	 the Free Software Foundation, either version 3 of the License, or
+	 (at your option) any later version.
+
+	 GlifPix Tags Extractor is distributed in the hope that it will be useful,
+	 but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 GNU General Public License for more details.
+
+	 You should have received a copy of the GNU General Public License
+	 along with GlifPix Tags Extractor.  If not, see <http://www.gnu.org/licenses/>.
+
+	 Contact : paul<at>jamespot<dot>com
+-->
+
+<project name="GlifPixTagsExtractor" default="help" basedir=".">
+	
+	
+
+	<!-- ======================================================================= -->
+	<!-- ======================================================================= -->
+	<!--             GlifPixTagsExtractor project                                -->
+	<!-- ======================================================================= -->
+	<!-- ======================================================================= -->
+
+
+
+	<!-- ==================== Properties  ====================================== -->
+
+	<property file="./glifpix.properties" />
+
+
+	<!-- ==================== Resources    ===================================== -->
+
+	<path id="dist">
+		<fileset dir="${dist}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+			<target name="resources.clean" description="Delete old build and dist directories">
+		<delete dir="${resources}" />
+		<mkdir dir="${resources}" />
+	</target>
+
+
+	<target name="resources.get" description="Get all DBPedia files">
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="en" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="de" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="fr" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="pl" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="ja" />
+			</antcall>
+		
+			<antcall target="resources.get.label">
+				<param name="lg" value="it" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="nl" />
+			</antcall>
+		
+			<antcall target="resources.get.label">
+				<param name="lg" value="es" />
+			</antcall>
+		
+			<antcall target="resources.get.label">
+				<param name="lg" value="pt" />
+			</antcall>
+		
+			<antcall target="resources.get.label">
+				<param name="lg" value="ru" />
+			</antcall>
+
+			<antcall target="resources.get.label">
+				<param name="lg" value="sv" />
+			</antcall>
+		
+			<antcall target="resources.get.label">
+				<param name="lg" value="zh" />
+			</antcall>
+
+	</target>
+
+	<target name="abstracts.get" description="Get all DBPedia files">
+
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="en" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="de" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="fr" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="pl" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="ja" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="it" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="nl" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="es" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="pt" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="ru" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="sv" />
+			</antcall>
+			<antcall target="resources.get.abstract">
+				<param name="lg" value="zh" />
+			</antcall>		
+	</target>
+
+
+	<target name="resources.get.label" description="Fetches a single label file" if='res.lng.${lg}'>
+	  <echo message="Getting ${lg} resources"/>
+		<get src="${dbPedia.base}/${lg}/labels_${lg}.nt.bz2" dest="${resources}/${lg}.nt.bz2"/>
+		<bunzip2 src="${resources}/${lg}.nt.bz2"/>
+		<replace file="${resources}/${lg}.nt">
+			<replacefilter token="&lt;http://www.w3.org/2000/01/rdf-schema#label&gt; " />
+			<replacefilter token="&lt;http://dbpedia.org/resource/" value="&lt;" />
+			<replacefilter token="@${lg} ." value="" />
+		</replace>
+	</target>
+	
+
+	<target name="resources.get.abstract" description="Fetches a single label file" if='res.lng.${lg}'>
+	  <echo message="Getting ${lg} abstracts"/>
+		<get src="${dbPedia.base}/${lg}/short_abstracts_${lg}.nt.bz2" dest="${resources}/abstracts_${lg}.nt.bz2" />
+		<bunzip2 src="${resources}/abstracts_${lg}.nt.bz2" />
+
+		<replace file="${resources}/abstracts_${lg}.nt">
+			<replacefilter token="&lt;http://dbpedia.org/resource/" value="&lt;" />
+			<replacefilter token="&lt;http://www.w3.org/2000/01/rdf-schema#comment&gt; " />
+			<replacefilter token="@${lg} ." value="" />
+		</replace>
+	</target>
+
+	
+
+	<!-- ==================== RESOURCES HANDLERS ===================================== -->
+
+	
+	<target name="resources.handle" description="Index all needed local label file">
+		<java classname="com.jamespot.glifpix.resources.ResourcesHandler" fork="true" maxmemory="1024M">
+			<classpath refid="dist" />
+			<arg value="-propfile"/>
+			<arg value="./glifpix.properties"/>
+		</java>
+	</target>
+
+	<target name="abstracts.handle" description="Index all needed local label file">
+		<java classname="com.jamespot.glifpix.resources.AbstractsHandler" fork="true" maxmemory="1024M">
+			<classpath refid="dist" />
+			<arg value="-propfile"/>
+			<arg value="./glifpix.properties"/>
+		</java>
+	</target>
+
+	
+	
+	
+	
+	<!-- ==================== Library code ===================================== -->
+	<path id="libs">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+
+	<target name="clean" description="Delete old build and dist directories">
+		<delete dir="${dist}" />
+		<delete dir="${build}" />
+		<delete dir="${doc}" />
+	</target>
+
+	<target name="mkdirs">
+		<mkdir dir="${dist}" />
+		<mkdir dir="${build}" />
+		<mkdir dir="${doc}" />
+		<copy todir="${dist}">
+			<fileset dir="${lib}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile" depends="clean, mkdirs" description="Compile Java sources">
+		<javac srcdir="${src}" destdir="${build}" debug="true" deprecation="false" optimize="true">
+			<classpath refid="libs" />
+		</javac>
+		<copy todir="${build}">
+			<fileset dir="${src}">
+				<include name="**/*.xml" />
+				<include name="**/*.html" />
+				<include name="**/*.xslt" />
+				<include name="**/*.properties" />
+				<include name="**/*.list" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="mkjar" depends="compile" description="Create binary distribution">
+		<jar jarfile="${dist}/glifpix-tags-extractor.jar" basedir="${build}">
+			<manifest>
+				<attribute name="Title" value="Glifpix tags extractor" />
+				<attribute name="Version" value="1.0" />
+			</manifest>
+		</jar>
+	</target>
+
+
+	<!-- ==================== Library documentation ============================ -->
+	<target name='mkdoc' description="Creates the source documentation">
+		<javadoc sourcepath="src" packagenames="com.jamespot.*" destdir="${doc}" access="public">
+			<classpath refid="libs" />
+		</javadoc>
+
+	</target>
+
+
+	<target name="dist" depends="mkjar, mkdoc">
+	</target>
+
+	
+	<!-- ==================== Service tasks   ===================================== -->
+	
+	<target name="server" description="Starts a Glifpix Extractor server">
+		<java classname="com.jamespot.glifpix.wrappers.SampleTagsServer" fork="true" maxmemory="1024M">
+			<classpath refid="dist" />
+			<arg value="-propfile"/>
+			<arg value="./glifpix.properties"/>
+		</java>
+	</target>
+
+	
+	<!-- ==================== Help task   ===================================== -->
+
+	<target name="help">
+		<echo>GlifPix Tags Extractor main commands :</echo>
+		<echo></echo>
+		<echo>  ant resources.clean</echo>
+		<echo>  ant resources.get</echo>
+		<echo>  ant abstracts.get</echo>
+		<echo></echo>
+		<echo>  ant dist</echo>
+		<echo>  ant resources.handle</echo>
+		<echo>  ant abstracts.handle</echo>
+		<echo></echo>
+		<echo>  ant server</echo>
+	</target>
+
+</project>
